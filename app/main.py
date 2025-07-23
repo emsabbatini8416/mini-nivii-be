@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.database import init_db, get_db, check_db_health
 from app.utils.csv_loader import load_csv_to_db
-from app.services.llm import generate_sql
+from app.services.llm import generate_sql, suggest_chart_simple
 from app.services.query_runner import run_query, validate_sql_safety, get_query_stats
 from app.services.cache import cache_service, init_cache, cleanup_cache
 
@@ -118,7 +118,7 @@ async def health_check():
 async def ask_question(request: QuestionRequest):
     """
     Main endpoint for natural language queries.
-    Now with validation, cache and better error handling.
+    Now with validation, cache, chart suggestions and better error handling.
     """
     try:
         logger.info(f"Processing question: {request.question}")
@@ -142,9 +142,13 @@ async def ask_question(request: QuestionRequest):
         # Execute query with cache
         data = await run_query(sql)
         
+        # Generate chart suggestion based on question and SQL
+        chart_suggestion = suggest_chart_simple(request.question, sql)
+        
         return {
             "sql": sql,
             "data": data,
+            "chart_suggestion": chart_suggestion,
             "cached": True,  # Can always come from cache
             "row_count": len(data["rows"])
         }
@@ -183,12 +187,12 @@ async def execute_query(request: QueryRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error ejecutando consulta: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        logger.error(f"Error executing query: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 @app.get("/stats")
 async def get_stats():
-    """Endpoint para obtener estadísticas de la base de datos."""
+    """Endpoint to get database statistics."""
     try:
         stats = await get_query_stats()
         
@@ -203,34 +207,27 @@ async def get_stats():
         }
         
     except Exception as e:
-        logger.error(f"Error obteniendo estadísticas: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        logger.error(f"Error getting statistics: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
 @app.delete("/cache")
 async def clear_cache():
-    """Endpoint para limpiar el cache (útil para debugging)."""
+    """Endpoint to clear cache (useful for debugging)."""
     try:
         success = cache_service.clear()
         return {
-            "message": "Cache limpiado" if success else "Error limpiando cache",
+            "message": "Cache cleared" if success else "Error clearing cache",
             "success": success
         }
     except Exception as e:
-        logger.error(f"Error limpiando cache: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+        logger.error(f"Error clearing cache: {e}")
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(e)}")
 
-# Manejo global de errores
+# Global error handling
 @app.exception_handler(500)
 async def internal_server_error_handler(request, exc):
-    logger.error(f"Error interno: {exc}")
+    logger.error(f"Internal error: {exc}")
     return JSONResponse(
         status_code=500,
-        content={"detail": "Error interno del servidor"}
+        content={"detail": "Internal server error"}
     )
-    session = get_session()
-    try:
-        sql = generate_sql(req.question)
-        data = run_query(session, sql)
-        return {"sql": sql, "data": data}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))

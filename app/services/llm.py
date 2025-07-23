@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Any
 from openai import OpenAI
 
 client = OpenAI(
@@ -37,3 +38,61 @@ def generate_sql(question: str) -> str:
         ]
     )
     return response.choices[0].message.content.strip()
+
+def suggest_chart_simple(question: str, sql_query: str) -> Dict[str, Any]:
+    """
+    Simple rule-based chart suggestion based on SQL query patterns.
+    No OpenAI call needed - uses pattern matching.
+    """
+    sql_lower = sql_query.lower()
+    question_lower = question.lower()
+    
+    # Default suggestion
+    suggestion = {
+        "chart_type": "table",
+        "title": "Query Results",
+        "description": "Table view for detailed data inspection"
+    }
+    
+    # Rule-based suggestions
+    if "group by" in sql_lower:
+        if "product_name" in sql_lower:
+            if "sum(" in sql_lower or "count(" in sql_lower:
+                suggestion = {
+                    "chart_type": "bar",
+                    "title": "Product Sales Comparison",
+                    "description": "Bar chart recommended for comparing products"
+                }
+        elif "week_day" in sql_lower or "day" in sql_lower:
+            suggestion = {
+                "chart_type": "bar",
+                "title": "Sales by Day",
+                "description": "Bar chart recommended for daily comparisons"
+            }
+        elif "hour" in sql_lower:
+            suggestion = {
+                "chart_type": "line",
+                "title": "Sales by Hour",
+                "description": "Line chart recommended for hourly trends"
+            }
+        elif "date" in sql_lower:
+            suggestion = {
+                "chart_type": "line",
+                "title": "Sales Over Time",
+                "description": "Line chart recommended for time series data"
+            }
+    
+    # Check for top/ranking queries
+    if any(word in question_lower for word in ["top", "best", "ranking", "mayor", "mejor"]):
+        if "limit" in sql_lower:
+            suggestion["chart_type"] = "bar"
+            suggestion["title"] = f"Top Results"
+            suggestion["description"] = "Bar chart recommended for rankings"
+    
+    # Check for percentage or proportion queries
+    if any(word in question_lower for word in ["percentage", "proportion", "porcentaje", "proporción"]):
+        suggestion["chart_type"] = "pie"
+        suggestion["title"] = "Distribution"
+        suggestion["description"] = "Pie chart recommended for proportions"
+    
+    return suggestion
