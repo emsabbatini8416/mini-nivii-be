@@ -73,13 +73,42 @@ Editar `.env` y agregar tu clave de OpenAI:
 OPENAI_API_KEY=tu_clave_de_openai_aqui
 ```
 
-### 3. Ejecutar con Docker
+### 3. Ejecutar con Docker Compose
 
 ```bash
+# Construir y ejecutar los contenedores
 docker-compose up --build
+
+# O ejecutar en segundo plano (detached mode)
+docker-compose up --build -d
+
+# Ver logs en tiempo real (si ejecutaste en modo detached)
+docker-compose logs -f
 ```
 
 La API estará disponible en: `http://localhost:8000`
+
+#### Comandos útiles de Docker Compose
+
+```bash
+# Detener los contenedores
+docker-compose down
+
+# Reconstruir solo si hay cambios
+docker-compose up --build
+
+# Ejecutar en segundo plano
+docker-compose up -d
+
+# Ver estado de los contenedores
+docker-compose ps
+
+# Ver logs
+docker-compose logs backend
+
+# Limpiar todo (contenedores, volúmenes, redes)
+docker-compose down --volumes --remove-orphans
+```
 
 ## 📡 API Endpoints
 
@@ -130,6 +159,39 @@ FastAPI genera documentación automática:
 
 ## 🐳 Docker
 
+### Con Docker Compose (Recomendado)
+
+Docker Compose orquesta todos los servicios necesarios automáticamente:
+
+```bash
+# Clonar el repositorio
+git clone <repository-url>
+cd nivii-challenge-be
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tu OPENAI_API_KEY
+
+# Construir y ejecutar
+docker-compose up --build
+
+# Para ejecutar en segundo plano
+docker-compose up --build -d
+```
+
+**Configuración en docker-compose.yml:**
+```yaml
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data.csv:/app/data.csv
+    env_file:
+      - .env
+```
+
 ### Construcción manual
 
 ```bash
@@ -143,6 +205,21 @@ El contenedor lee las variables desde `.env`:
 
 ```env
 OPENAI_API_KEY=tu_clave_aqui
+```
+
+### Troubleshooting Docker
+
+```bash
+# Si tienes problemas con permisos o caché
+docker-compose down --volumes
+docker-compose build --no-cache
+docker-compose up
+
+# Ver logs detallados
+docker-compose logs -f backend
+
+# Acceder al contenedor para debugging
+docker-compose exec backend bash
 ```
 
 ## 🔧 Desarrollo Local
