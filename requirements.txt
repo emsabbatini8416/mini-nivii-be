@@ -1,6 +1,29 @@
-fastapi
-uvicorn
-sqlalchemy
-pandas
-openai
-python-dotenv
+# Framework web escalable
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Base de datos y ORM con connection pooling
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.7  # Para PostgreSQL en producción
+
+# Cache para escalabilidad
+redis==5.0.1
+
+# Procesamiento de datos (solo para casos específicos, no para CSV loading)
+pandas==2.1.3
+
+# LLM integration
+openai==1.3.5
+
+# Configuración y utilidades
+python-dotenv==1.0.0
+pydantic==2.5.0
+
+# Monitoring y logging
+structlog==23.2.0
+
+# Servidor de producción
+gunicorn==21.2.0
+
+# CORS y middleware
+httpx==0.25.2

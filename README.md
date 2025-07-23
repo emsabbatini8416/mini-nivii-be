@@ -1,297 +1,104 @@
-# Mini Nivii Backend
+# 🚀 Nivii Challenge Backend
 
-API backend que permite realizar consultas en lenguaje natural sobre datos de ventas utilizando OpenAI para convertir preguntas en consultas SQL.
+Scalable API that c## 🏗️ Scalable Architecture
 
-## 🚀 Características
+✅ **Redis Cache** - Distributed cache for fast responses  
+✅ **Streaming CSV** - Efficient loading without full `pd.read_csv()`  
+✅ **Multi-Worker** - 4 concurrent Gunicorn workers  
+✅ **Health Checks** - Automatic service monitoring  
+✅ **Connection Pooling** - Optimized DB connection management  
 
-- **API REST** construida con FastAPI
-- **Procesamiento de lenguaje natural** con OpenAI GPT para convertir preguntas en SQL
-- **Base de datos SQLite** con más de 24,000 registros de ventas
-- **Dockerizado** para fácil despliegue
-- **CORS habilitado** para integración con frontend
-- **Carga automática de datos** desde CSV
+## 📊 Tech Stack
 
-## 📊 Datos
+- **FastAPI** + **Uvicorn** - High-performance async API
+- **OpenAI GPT** - Natural language → SQL conversion  
+- **Redis** - Scalable distributed cache
+- **SQLAlchemy** - ORM with connection pooling
+- **SQLite** - Database with 24K+ records
+- **Docker** - Multi-stage containerizationl language** into SQL queries on sales data using **OpenAI** + **FastAPI**.
 
-El proyecto incluye un dataset de ventas con las siguientes columnas:
-- `date` - Fecha de la venta
-- `week_day` - Día de la semana
-- `hour` - Hora de la venta
-- `ticket_number` - Número de ticket
-- `waiter` - ID del mesero
-- `product_name` - Nombre del producto
-- `quantity` - Cantidad vendida
-- `unitary_price` - Precio unitario
-- `total` - Total de la venta
+## 🔥 Quick Start
 
-## 🏗️ Arquitectura
-
-```
-app/
-├── main.py              # API FastAPI + configuración CORS
-├── database.py          # Configuración SQLAlchemy
-├── models.py            # Modelos de base de datos
-├── services/
-│   ├── llm.py          # Integración OpenAI
-│   └── query_runner.py # Ejecutor de consultas SQL
-└── utils/
-    └── csv_loader.py   # Cargador de datos CSV
-```
-
-## 🛠️ Tecnologías
-
-- **FastAPI** - Framework web moderno para APIs
-- **SQLAlchemy** - ORM para manejo de base de datos
-- **OpenAI API** - Procesamiento de lenguaje natural
-- **Pandas** - Manipulación de datos
-- **Docker** - Contenedorización
-- **SQLite** - Base de datos ligera
-
-## ⚡ Inicio Rápido
-
-### Requisitos Previos
-
-- Docker y Docker Compose instalados
-- Clave API de OpenAI
-
-### 1. Clonar el repositorio
-
+### 1. Launch with Docker Compose
 ```bash
-git clone <repository-url>
-cd nivii-challenge-be
-```
-
-### 2. Configurar variables de entorno
-
-```bash
-cp .env.example .env
-```
-
-Editar `.env` y agregar tu clave de OpenAI:
-
-```env
-OPENAI_API_KEY=tu_clave_de_openai_aqui
-```
-
-### 3. Ejecutar con Docker Compose
-
-```bash
-# Construir y ejecutar los contenedores
-docker-compose up --build
-
-# O ejecutar en segundo plano (detached mode)
-docker-compose up --build -d
-
-# Ver logs en tiempo real (si ejecutaste en modo detached)
-docker-compose logs -f
-```
-
-La API estará disponible en: `http://localhost:8000`
-
-#### Comandos útiles de Docker Compose
-
-```bash
-# Detener los contenedores
-docker-compose down
-
-# Reconstruir solo si hay cambios
-docker-compose up --build
-
-# Ejecutar en segundo plano
-docker-compose up -d
-
-# Ver estado de los contenedores
-docker-compose ps
-
-# Ver logs
-docker-compose logs backend
-
-# Limpiar todo (contenedores, volúmenes, redes)
-docker-compose down --volumes --remove-orphans
-```
-
-## 📡 API Endpoints
-
-### POST `/ask`
-
-Realiza una consulta en lenguaje natural sobre los datos de ventas.
-
-**Request:**
-```json
-{
-  "question": "¿Cuáles fueron las ventas totales en noviembre?"
-}
-```
-
-**Response:**
-```json
-{
-  "sql": "SELECT SUM(total) as ventas_totales FROM sales WHERE date LIKE '11/%/2024'",
-  "data": {
-    "columns": ["ventas_totales"],
-    "rows": [[1250000]]
-  }
-}
-```
-
-### Ejemplos de consultas
-
-- "¿Cuál es el producto más vendido?"
-- "¿Cuánto vendió el mesero 51 en octubre?"
-- "¿Cuáles son las ventas por día de la semana?"
-- "¿Qué productos tienen precio mayor a 20000?"
-
-## 🧪 Pruebas
-
-### Probar la API con curl
-
-```bash
-curl -X POST "http://localhost:8000/ask" \
-     -H "Content-Type: application/json" \
-     -d '{"question": "¿Cuántos productos diferentes hay?"}'
-```
-
-### Documentación automática
-
-FastAPI genera documentación automática:
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
-## 🐳 Docker
-
-### Con Docker Compose (Recomendado)
-
-Docker Compose orquesta todos los servicios necesarios automáticamente:
-
-```bash
-# Clonar el repositorio
-git clone <repository-url>
+# Clone and enter directory
+git clone <repo-url>
 cd nivii-challenge-be
 
-# Configurar variables de entorno
+# Configure environment variables
 cp .env.example .env
-# Editar .env con tu OPENAI_API_KEY
+# Edit .env and add your OPENAI_API_KEY
 
-# Construir y ejecutar
+# Launch entire stack
 docker-compose up --build
-
-# Para ejecutar en segundo plano
-docker-compose up --build -d
 ```
 
-**Configuración en docker-compose.yml:**
-```yaml
-services:
-  backend:
-    build: .
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./data.csv:/app/data.csv
-    env_file:
-      - .env
-```
+### 2. Test the API
+- **Swagger UI**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+- **Statistics**: http://localhost:8000/stats
 
-### Construcción manual
+## 🎯 Main Endpoints
+
+| Endpoint | Method | Description |
+|----------|---------|-------------|
+| `/docs` | GET | **Interactive Swagger UI** |
+| `/health` | GET | System health check |
+| `/stats` | GET | Data statistics |
+| `/query` | POST | Direct SQL query |
+| `/natural-query` | POST | **Natural language question** |
+
+## 💬 Usage Example
 
 ```bash
-docker build -t nivii-backend .
-docker run -p 8000:8000 --env-file .env nivii-backend
+# Natural language question
+curl -X POST "http://localhost:8000/natural-query" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What are the top 5 best-selling products?"}'
+
+# Direct SQL query  
+curl -X POST "http://localhost:8000/query" \
+  -H "Content-Type: application/json" \
+  -d '{"sql": "SELECT COUNT(*) FROM sales"}'
 ```
 
-### Variables de entorno en Docker
+## 🏗️ Arquitectura Escalable
 
-El contenedor lee las variables desde `.env`:
+✅ **Redis Cache** - Cache distribuido para respuestas rápidas  
+✅ **Streaming CSV** - Carga eficiente sin `pd.read_csv()` completo  
+✅ **Multi-Worker** - 4 workers Gunicorn concurrentes  
+✅ **Health Checks** - Monitoreo automático de servicios  
+✅ **Connection Pooling** - Gestión optimizada de conexiones DB  
 
-```env
-OPENAI_API_KEY=tu_clave_aqui
-```
+## � Stack Tecnológico
 
-### Troubleshooting Docker
+- **FastAPI** + **Uvicorn** - API async de alto rendimiento
+- **OpenAI GPT** - Conversión lenguaje natural → SQL  
+- **Redis** - Cache distribuido escalable
+- **SQLAlchemy** - ORM con connection pooling
+- **SQLite** - Base de datos con 24K+ registros
+- **Docker** - Contenedorización multi-stage
+
+## 📊 Data
+
+**24,212 sales records** with columns:
+- `date`, `week_day`, `hour` - Temporal information
+- `ticket_number`, `waiter` - Identifiers
+- `product_name`, `quantity`, `unitary_price`, `total` - Sales data
+
+## 🔧 Local Development
 
 ```bash
-# Si tienes problemas con permisos o caché
-docker-compose down --volumes
-docker-compose build --no-cache
-docker-compose up
-
-# Ver logs detallados
+# View logs in real time
 docker-compose logs -f backend
 
-# Acceder al contenedor para debugging
-docker-compose exec backend bash
+# Stop services
+docker-compose down
+
+# Clean volumes (reset data)
+docker-compose down --volumes
 ```
 
-## 🔧 Desarrollo Local
+## 📄 License
 
-### Sin Docker
-
-1. **Instalar dependencias:**
-```bash
-pip install -r requirements.txt
-```
-
-2. **Configurar variables de entorno:**
-```bash
-export OPENAI_API_KEY=tu_clave_aqui
-```
-
-3. **Ejecutar la aplicación:**
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-## 📁 Estructura de Archivos
-
-```
-nivii-challenge-be/
-├── app/                     # Código principal
-│   ├── main.py             # FastAPI app + CORS
-│   ├── database.py         # Configuración DB
-│   ├── models.py           # Modelos SQLAlchemy
-│   ├── services/           # Lógica de negocio
-│   └── utils/              # Utilidades
-├── data.csv                # Dataset de ventas (24K+ registros)
-├── docker-compose.yml      # Orquestación
-├── Dockerfile              # Imagen del backend
-├── requirements.txt        # Dependencias Python
-├── .env.example           # Plantilla de configuración
-└── .gitignore             # Archivos ignorados
-```
-
-## 🔒 Seguridad
-
-- **Variables sensibles** en `.env` (excluido de Git)
-- **Validación de entrada** con Pydantic
-- **Ejecución segura** de consultas SQL
-- **CORS configurado** para orígenes específicos
-
-## 🚦 Estados de la API
-
-- `200` - Consulta exitosa
-- `500` - Error interno (consulta SQL inválida, error de OpenAI, etc.)
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-## 📝 Notas Técnicas
-
-- La base de datos se inicializa automáticamente al iniciar la aplicación
-- Los datos se cargan desde `data.csv` en el primer arranque
-- OpenAI genera consultas SQL que se ejecutan de forma segura
-- El sistema está optimizado para consultas sobre datos de ventas
-
-## 🔗 Enlaces Útiles
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [OpenAI API Reference](https://platform.openai.com/docs/)
-- [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
-
----
-
-Desarrollado como parte del Nivii Challenge 🚀
+MIT License
